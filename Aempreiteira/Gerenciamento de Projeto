@@ -1,0 +1,510 @@
+Sistema empreiteira colaborativa
+
+Desenvolver um sistema seguro que tenha como principal funcionalidade o gerenciamento de clientes, ordem de serviços, e responsividade para qualquer aparelho, seja mobile ou desktop.
+
+Atual palheta de cores : Monocromático definidas por padrão. (selecionados dia 10/03/2020 por Yan Fonseca).
+
+Escala RGB:
+115
+120
+128
+50
+
+128
+179
+255
+100
+
+230
+240
+255
+100
+
+105
+118
+138
+54
+
+184
+192
+204
+80
+
+Escala Hexadecimal:
+#737880 cinza
+
+#80B3FF azul claro
+
+#E6F0FF quase azul bebê
+
+#69768A cinza escuro
+
+#B8C0CC cinza claro
+
+=============\\==================\\=============
+organização:
+
+Raiz: Aempreiteira
+Frameworks
+Sistema
+Web
+=============//==================//=============
+
+------------------------------------------------
+					FRAMEWORKS
+				------------------
+
+../Aempreiteira/Frameworks
+css
+js
+
+------------------------------------------------
+../Aempreiteira/Frameworks/css
+Arquivos bootstrapp e frameworks afins.
+
+------------------------------------------------
+../Aempreiteira/Frameworks/js
+Arquivos js e scripts afins.
+
+=============//==================//=============
+
+------------------------------------------------
+					 SISTEMA
+				 ---------------
+
+../Aempreiteira/Sistema
+DB
+PHP
+
+------------------------------------------------
+../Aempreiteira/Sistema/DB
+imagensOS
+perfis
+
+------------------------------------------------
+../Aempreiteira/Sistema/DB/imagensOS
+Imagens dos serviços prestados.
+
+------------------------------------------------
+../Aempreiteira/Sistema/DB/perfis
+Imagens dos usuários do sistema 
+(geralmente colaboradores).
+
+------------------------------------------------
+../Aempreiteira/Sistema/DB/PHP
+Arquivos do back-end (códigos de programação).
+
+=============//==================//=============
+
+------------------------------------------------
+					  WEB
+				---------------
+../Aempreiteira/Web
+arquivos do front-end (páginas com formulários).
+
+=============\\==================\\=============
+
+banco de dados:
+
+create table colaborador(
+	id_col int primary key not null AUTO_INCREMENT,
+	usuario varchar(25) unique not null,
+	senha varchar(255) not null,
+	cpf varchar(20) unique null,
+	cnpj varchar(30) unique null,
+	nome varchar(255) not null,
+	nascimento date /*Caso seja CPF*/
+);
+ 
+create table operador( /*(gerenciador do sistema)*/
+    id_ope int primary key not null AUTO_INCREMENT,
+	usuario varchar(25) unique not null,
+	senha varchar(255) not null,
+	cpf varchar(20) unique not null,
+	nome varchar(100) not null,
+	nascimento date,
+	rank int(2) not null
+);
+
+create table cliente(
+	id_cli int primary key not null AUTO_INCREMENT,
+	nome varchar(255),
+	cpf varchar(20) not null unique,
+	cnpj varchar(30) not null unique,
+	nascimento date,
+	endereco text not null,
+	numero varchar(11) not null,
+	complemento text not null,
+	telefone varchar(20) not null,
+	celular varchar(20) not null unique,
+	email varchar(100) not null unique
+);
+
+create table ordem_servico(
+	cod_os int primary key not null AUTO_INCREMENT,
+	descricao longtext not null,
+	tipo int(1),						/*( 1-avaliação, 2-implantação, 3-manutenção programada, 4-manutenção emergencial)*/
+	status int(1) not null,			/*(1-em execução, 2-finalizado, 3-a executar)*/
+	data date not null,
+	formapagamento int(1) not null,		/*1-vista ou 2-prazo*/
+	parcelas int(3),						/*(caso parcelado)*/
+	totalpagar decimal(20,2) not null,
+	totalpago decimal(20,2) not null,
+	endereco text not null,
+	numero varchar(11) not null,
+	complemento text not null,
+	id_cli_fk int,
+	id_ope_fk int,
+	id_col_fk int,
+	foreign key (id_cli_fk) references cliente (id_cli),
+	foreign key (id_ope_fk) references operador (id_ope),
+	foreign key (id_col_fk) references colaborador (id_col)
+);
+/* Próxima versão implementação de arquivos em diretórios chamados pela DB*/
+create table arquivos(
+	cod_arq int primary key not null AUTO_INCREMENT,
+	nome text not null,
+	cod_os_fk int, 
+	id_cli_fk1 int,
+	id_col_fk1 int,
+	id_ope_fk1 int,
+	foreign key (cod_os_fk) references ordem_servico (cod_os),
+	foreign key (id_cli_fk1) references cliente (id_cli),
+	foreign key (id_ope_fk1) references operador (id_ope),
+	foreign key (id_col_fk1) references colaborador (id_col)
+);
+
+create table base_atributos(
+cod_atrib int primary key not null AUTO_INCREMENT,
+atributo text not null
+);
+
+create table base_nivel(
+cod_nvl int primary key not null AUTO_INCREMENT,
+nivel text not null
+);
+
+create table atributos(
+cod_atr int primary key not null AUTO_INCREMENT,
+cod_atrib_fk int not null, 
+cod_nvl_fk int not null,
+id_col_fk2 int,
+foreign key (cod_atrib_fk) references base_atributos (cod_atrib),
+foreign key (cod_nvl_fk) references base_nivel (cod_nvl),
+foreign key (id_col_fk2) references colaborador (id_col)
+);/* Próxima versão também */
+create table postagem(
+cod_post int primary key not null AUTO_INCREMENT,
+cod_arq_fk int,
+id_col_fk3 int,
+foreign key (cod_arq_fk) references arquivos (cod_arq),
+foreign key (id_col_fk3) references colaborador (id_col)
+); /* Próxima versão implementação de arquivos em diretórios chamados pela DB*/
+create table anotacoes(
+cod_anot int primary key not null AUTO_INCREMENT,
+titulo varchar(255) not null,
+corpo text not null,
+id_ope_fk2 int,
+id_col_fk4 int,
+cod_arq_fk1 int,
+foreign key (cod_arq_fk1) references arquivos (cod_arq),
+foreign key (id_ope_fk2) references operador (id_ope),
+foreign key (id_col_fk4) references colaborador (id_col)
+);
+
+
+=============\\==================\\=============
+
+------------------------------------------------
+				   ANOTAÇÕES
+				---------------
+Criar um script com BACKUP DATABASE "nome do 
+banco"
+TO DISK = 'nomearquivo';
+
+criar um script para exibir relatório diário de 
+serviços valor total do dia, da semana, do mês e 
+do semestre, além do anual.
+
+=============//==================//=============
+
+------------------------------------------------
+				  RELATÓRIOS
+			   ----------------
+
+30/11/2019
+-criação do banco de dados.
+
+------------------------------------------------
+
+05/12/2019
+-criação da primeira função do sistema adm.
+
+------------------------------------------------
+
+11/12/2019
+-Criação do arquivo de conexão com o banco de
+ dados.
+-Criação do arquivo de login. 
+-edição do banco de dados.
+-criação do banco de dados comercial.
+-criação de um novo banco de dados auxiliar.
+
+------------------------------------------------
+
+12/12/2019
+-criação do arquivo inicial, faltando apenas
+ edição.
+-edição do arquivo de formulário de login.
+
+------------------------------------------------
+
+14/12/2019
+-edição dos bancos de dados.
+-criação dos arquivos de login e criptografia.
+-edição dos arquivos de login e criptografia.
+-criação dos arquivos de inclusão e exibição de 
+dados.
+
+------------------------------------------------
+
+12/01/2020
+-Análise de dados do sistema, além de possíveis
+correções.
+
+------------------------------------------------
+15/01/2020
+-Análise de dados e possíveis correções.
+-Criação do formulário de cadastro para análise
+ do banco de dados.
+-Criação do arquivo de cadastro.
+
+------------------------------------------------
+16/01/2020
+-Análise de dados e depuração de erros.
+
+------------------------------------------------
+17/01/2020
+-Análise de dados e depuração de erros.
+
+------------------------------------------------
+18/01/2020
+-Análise, depuração e correção de erros relacio-
++nados a segurança do sistema.
+-Remover session start da pagina principal e dar
+ include com a página de login, dando assim um 
+ unset_session();
+
+------------------------------------------------
+20/01/2020
+
+-Desenvolvimento das páginas administrativas
+-Atualização do banco de dados, tabela 
+ordem_serviço, agora se chama ordem_servico.
+-Atualização da coluna descrição, agora se
+ chama descricao.
+-Criação de gráficos para gerenciamento de 
+produtividade.
+------------------------------------------------
+21/01/2020
+-Implantação dos gráficos em JavaScript.
+-Criação de uma nova coluna na tabela ordem_ser-
++vico, chave estrangeira com id do (s) colabora-
++dor (es)
+																							-Configurar sql para selecionar 6 nomes com
+																						 	maior rendimento e marcar no gráfico js.
+ -----------------------------------------------
+  22/01/2020
+  -análise do erro no gráfico.
+ -----------------------------------------------
+  25/01/2020
+  -análise do erro no gráfico.
+ -----------------------------------------------
+  27/01/2020
+  -análise do erro no gráfico.
+ -----------------------------------------------
+  07/02/2020
+  -análise do erro no gráfico.
+ -----------------------------------------------
+  11/02/2020
+  -análise do erro no gráfico.
+  -criação de layout e algumas funções do sistema 
+  administrativo da prestação de serviços.
+  -adição de dados, e implantação de formulários,
+  posteriormente implantação dos scripts para
+  adição de dados ao banco de dados.
+ -----------------------------------------------
+  12/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ -----------------------------------------------
+  13/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  14/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  15/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  16/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  17/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  18/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+  -finalização de "update" de colaborador e 
+  atributo.
+ -----------------------------------------------
+  19/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  20/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  21/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  22/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  23/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  24/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  25/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  26/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+ ----------------------------------------------- 
+  27/02/2020
+  -análise de erros, correções e,
+  inserção de funções (insert, update e delete).
+  -Remodelação do banco de dados da prestadora 
+  de serviços.
+ ----------------------------------------------- 
+  28/02/2020
+ -Finalização updade de colaborador e atributo.
+ -análise de erros, correções e, 
+ inserção de funções (insert, update e delete).
+ -Abertura da criação de clientes e edição 
+ dos mesmos.
+ -----------------------------------------------
+  29/02/2020
+ -Finalização updade de colaborador e atributo.
+ -análise de erros, correções e, 
+ inserção de funções (insert, update e delete).
+ -continuação da criação de clientes e edição 
+ dos mesmos.
+ -----------------------------------------------
+  01/03/2020 até 10/03/2020
+ -Criação dos scripts de alteração e exclusão de
+  clientes. 
+ -Criação e análise da rotina de pesquisa do 
+ sistema.
+ -análise de erros, correções e, 
+ inserção de funções (insert, update e delete).
+ -continuação da criação de clientes e edição 
+ dos mesmos.
+-----------------------------------------------
+ 11/03/2020
+ -Finalização da Página de alteração "client".
+ -Dados - 100%.
+ -Contatos - 100%.
+ -Endereços - 100%.
+ -Restando apenas os scripts.
+ -----------------------------------------------
+ 12/03/2020
+ -Finalização da Página de alteração "client".
+ -Dados - 100%.
+ -Contatos - 100%.
+ -Endereços - 100%.
+ -Restando apenas os scripts.
+ -----------------------------------------------
+ 13/03/2020
+ -Finalização da Página de alteração "client".
+ -Dados - 100%.
+ -Contatos - 100%.
+ -Endereços - 100%.
+ -Restando apenas os scripts.
+ -----------------------------------------------
+ 14/03/2020
+ -Finalização da Página de alteração "client".
+ -Dados - 100%.
+ -Contatos - 100%.
+ -Endereços - 100%.
+ -Restando apenas os scripts.
+ -----------------------------------------------
+ 15/03/2020
+ -Finalização da Página de alteração "client".
+ -Dados - 100%.
+ -Contatos - 100%.
+ -Endereços - 100%.
+ -Restando apenas os scripts.
+ -iniciado a edição do script.
+ -----------------------------------------------
+ 16/03/2020
+ -Finalização da Página de alteração "client".
+ -Dados - 100%.
+ -Contatos - 100%.
+ -Endereços - 100%.
+ -Restando apenas os scripts.
+ -iniciado a edição do script.
+ -----------------------------------------------
+ 17/03/2020
+ -Finalização da Página de alteração "client".
+ -Dados - 100%.
+ -Contatos - 100%.
+ -Endereços - 100%.
+ -Restando apenas os scripts.
+ -iniciado a edição do script.
+ -----------------------------------------------
+ 18/03/2020
+ -Finalização da Página de alteração "client".
+ -Dados - 100%.
+ -Contatos - 100%.
+ -Endereços - 100%.
+ -Restando apenas os scripts.
+ -iniciado a edição do script.
+ -----------------------------------------------
+ 19/03/2020
+ -Finalização da Página de alteração "client".
+ -Dados - 100%.
+ -Contatos - 100%.
+ -Endereços - 100%.
+ -Restando apenas os scripts.
+ -iniciado a edição do script.
+ -----------------------------------------------
+ 20/03/2020
+ -criação de newclientger
+ -criação de newclientest
+ -criação de newclientfn
+ -finalização de scripts e correções de 
+ atualizações.
+ -----------------------------------------------
+ 20/03/2020
+ -criação de newclientger
+ -criação de newclientest
+ -criação de newclientfn
+ -finalização de scripts e correções de 
+ atualizações.
+=============//==================//=============
